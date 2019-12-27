@@ -1,0 +1,5 @@
+classes= 36
+train  = data/train_plate_char.txt
+valid  = data/test_plate_char.txt
+names = cfg/char/obj_plate_char.names
+backup = backup_plate\backup_plate_char1020

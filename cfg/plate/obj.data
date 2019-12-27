@@ -1,0 +1,5 @@
+classes= 1
+train  = data/train_plate.txt
+valid  = data/test_plate.txt
+names = cfg/plate/obj_plate.names
+backup = backup_plate\backup_plate_0908

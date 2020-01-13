@@ -7,6 +7,8 @@ Created on Thu Dec  5 23:45:11 2019
 
 import os
 import cv2
+import sys
+sys.path.append("backbone\\")
 import darknet
 
 
@@ -79,12 +81,12 @@ class YOLO:
         
         return xmin, ymin, xmax, ymax
 
-    def cut_image(self,detections,img):
+    def cut_image(self,detections,img,x_cutmin = 0,y_cutmin = 0):
         
         obj_img = []
-        expand_x = 10
-        expand_y = 10
-        
+        expand_x = int(img.shape[1]*0.001)
+        expand_y = int(img.shape[0]*0.001)
+       
         for detection in detections:
             x, y, w, h = detection[2][0],\
                 detection[2][1],\
@@ -101,9 +103,10 @@ class YOLO:
             xmax = pt2[0] if pt2[0] < img.shape[1] else  img.shape[1]
             ymax = pt2[1] if pt2[1] < img.shape[0] else  img.shape[0]
             
-            img=img[ymin:ymax ,xmin:xmax]
-            obj_img.append(img)
-            print("cut x: {} : {} y: {} : {} name : {}".format(xmin,xmax,ymin,ymax, detection[0].decode()))
+            imgs=img[ymin:ymax ,xmin:xmax]
+            if(imgs.shape[1] >= x_cutmin and imgs.shape[0] >= y_cutmin ):
+                obj_img.append(imgs) 
+            print("cut x: {} : {} y: {} : {} name :{}  h : {}  W : {}".format(xmin,xmax,ymin,ymax, detection[0].decode(),imgs.shape[0],imgs.shape[1]))
         return obj_img
 
     def cvDrawBoxes(self,detections,img):
@@ -116,7 +119,7 @@ class YOLO:
                 float(x), float(y), float(w), float(h),[img.shape[1],img.shape[0]],[self.resize_img.shape[1],self.resize_img.shape[0]])
             pt1 = (xmin, ymin)
             pt2 = (xmax, ymax)
-
+            
             cv2.rectangle(img, pt1, pt2, (0, 255, 0), 1)
             cv2.putText(img,
                         detection[0].decode() +
@@ -125,7 +128,7 @@ class YOLO:
                         [0, 255, 0], 2)
         return img
     
-    def yolo(self,img,thre = 0.8): # 回傳畫好的圖片(單張)以及切個出來的圖片(list)
+    def yolo(self,img,thre = 0.8): #回傳
         frame_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         self.resize_img = cv2.resize(frame_rgb,
                                    (darknet.network_width(self.netMain),
